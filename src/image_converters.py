@@ -1,5 +1,6 @@
 from PIL import Image
 import cairosvg
+import os
 # import pyheif
 
 def convert_image(input_path, output_path, output_format):

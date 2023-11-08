@@ -1,9 +1,19 @@
-from unittest import TestCase
+import unittest 
+from unittest.mock import patch, MagicMock
 import os
 from PIL import Image
 from src.image_converters import convert_image, resize_and_save_as_icon, convert_to_grayscale, resize_image, svg_to_image
 
-class TestImageConverters(TestCase):
+class TestImageConversionFailures(unittest.TestCase):
+    @patch('src.image_converters.Image')
+    def test_unsupported_image_format(self, mock_image):
+        mock_image.open.side_effect = ValueError("Unsupported format")
+        input_path = "input_image.bmp"
+        output_path = "output_image.unknown"  # Unsupported format
+        output_format = 'unknown'
+        result = convert_image(input_path, output_path, output_format)
+        self.assertFalse(result)
+class TestImageConverters(unittest.TestCase):
     def test_convert_image_to_jpeg(self):
         input_path = "data/sample.png"
         output_path = "data/result.jpg"
@@ -136,6 +146,56 @@ class TestImageConverters(TestCase):
         if os.path.exists(output_path):
             os.remove(output_path)
 
+class TestImageConversionSuccess(unittest.TestCase):
+    @patch('src.image_converters.Image')
+    def test_convert_image_success(self, mock_image):
+        input_path = "input_image.png"
+        output_path = "output_image.jpeg"
+        output_format = 'JPEG'
+        result = convert_image(input_path, output_path, output_format)
+        self.assertTrue(result)
+    
+    @patch('src.image_converters.Image')
+    def test_resize_and_save_as_icon_success(self, mock_image):
+        input_file = "input_image.png"
+        output_file = "output_icon.ico"
+        size = 32
+        result = resize_and_save_as_icon(input_file, output_file, size)
+        self.assertTrue(result)
+    
+    @patch('src.image_converters.Image')
+    def test_convert_to_grayscale_success(self, mock_image):
+        input_file = "input_image.png"
+        output_file = "output_grayscale.png"
+        result = convert_to_grayscale(input_file, output_file)
+        self.assertTrue(result)
+    
+    @patch('src.image_converters.Image')
+    def test_resize_image_success(self, mock_image):
+        input_path = "input_image.png"
+        output_path = "output_image.png"
+        width = 100
+        height = 100
+        result = resize_image(input_path, output_path, width, height)
+        self.assertTrue(result)
+
+    @patch('src.image_converters.cairosvg.svg2png')
+    @patch('src.image_converters.Image.open')
+    @patch('src.image_converters.os.remove')
+    def test_svg_to_image_success(self, mock_remove, mock_open, mock_svg2png):
+        input_path = "input_image.svg"
+        output_path_png = "output_image.png"
+        output_format = 'PNG'
+        result_png = svg_to_image(input_path, output_path_png, output_format)
+        self.assertIsNone(result_png)  # Assuming svg_to_image returns None for success
+
+        output_path_jpg = "output_image.jpg"
+        output_format = 'JPG'
+        mock_img = MagicMock()
+        mock_open.return_value.__enter__.return_value = mock_img
+        result_jpg = svg_to_image(input_path, output_path_jpg, output_format)
+        mock_img.convert.assert_called_with('RGB')
+        self.assertIsNone(result_jpg)  # Assuming svg_to_image returns None for success
+
 if __name__ == 'main':
-    unittest = TestImageConverters()
-    unittest.run()
+    unittest.main()
