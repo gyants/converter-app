@@ -1,28 +1,33 @@
 from PIL import Image
+
 import cairosvg
 import os
+
 # import pyheif
+
 
 def convert_image(input_path, output_path, output_format):
     """
     Converts an image to the specified format.
-    
+
     :param input_path: str - The path to the input image.
     :param output_path: str - The path to save the converted image.
     :param output_format: str - The desired output format ('JPEG', 'PNG', or 'WEBP').
     :return: bool - True if conversion was successful, False otherwise.
     """
-    valid_formats = ['JPEG', 'PNG', 'WEBP', 'TIFF']
+    valid_formats = ["JPEG", "PNG", "WEBP", "TIFF"]
     if output_format not in valid_formats:
-        print(f"Unsupported format: {output_format}. Supported formats are: {valid_formats}")
+        print(
+            f"Unsupported format: {output_format}. Supported formats are: {valid_formats}"
+        )
         return False
 
     try:
         with Image.open(input_path) as image:
             # Convert the image to RGB if converting to JPEG
-            if output_format == 'JPEG':
-                if image.mode != 'RGB':
-                    image = image.convert('RGB')
+            if output_format == "JPEG":
+                if image.mode != "RGB":
+                    image = image.convert("RGB")
 
             # Save the image in the specified format
             image.save(output_path, output_format)
@@ -30,6 +35,7 @@ def convert_image(input_path, output_path, output_format):
     except Exception as e:
         print(f"Failed to convert image: {e}")
         return False
+
 
 def resize_and_save_as_icon(input_file, output_file, size):
     """
@@ -50,7 +56,8 @@ def resize_and_save_as_icon(input_file, output_file, size):
     except Exception as e:
         print(f"Failed to resize and save as icon: {e}")
         return False
-    
+
+
 def convert_to_grayscale(input_file, output_file):
     """
     Convert the input image to grayscale and save it as an output image.
@@ -71,7 +78,8 @@ def convert_to_grayscale(input_file, output_file):
     except Exception as e:
         print(f"Failed to convert to grayscale: {e}")
         return False
-    
+
+
 def resize_image(input_path, output_path, width, height):
     """
     Resize an image to the specified width and height and save it as a new image.
@@ -93,6 +101,7 @@ def resize_image(input_path, output_path, width, height):
         print(f"Failed to resize image: {e}")
         return False
 
+
 def svg_to_image(input_path, output_path, output_format):
     """
     Convert an SVG file to an image (PNG or JPG).
@@ -101,26 +110,28 @@ def svg_to_image(input_path, output_path, output_format):
     :param output_path: str - The path to save the PNG or JPG image.
     :param output_format: str - The desired output format ('PNG' or 'JPG').
     """
-    if output_format not in ['PNG', 'JPG']:
+    if output_format not in ["PNG", "JPG"]:
         print(f"Unsupported format: {output_format}. Supported formats are: PNG, JPG")
         return
 
     try:
-        if output_format.upper() == 'PNG':
+        if output_format.upper() == "PNG":
             cairosvg.svg2png(url=input_path, write_to=output_path)
-        elif output_format.upper() == 'JPG':
+        elif output_format.upper() == "JPG":
             # Convert to PNG first, then convert PNG to JPG
             # This is because cairosvg does not support direct svg to jpg conversion
-            temp_png_path = output_path.rsplit('.', 1)[0] + ".png"
+            temp_png_path = output_path.rsplit(".", 1)[0] + ".png"
             cairosvg.svg2png(url=input_path, write_to=temp_png_path)
-            
+
             # Now convert the PNG to JPG using Pillow
             from PIL import Image
+
             with Image.open(temp_png_path) as img:
-                img.convert('RGB').save(output_path, 'JPEG')
+                img.convert("RGB").save(output_path, "JPEG")
 
             # Clean up the temporary PNG file
             import os
+
             os.remove(temp_png_path)
     except Exception as e:
         print(f"Failed to convert SVG to {output_format}: {e}")
